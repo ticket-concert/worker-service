@@ -81,7 +81,7 @@ require (
 
 require (
 	github.com/andybalholm/brotli v1.0.6 // indirect
-	github.com/google/uuid v1.6.0 // indirect
+	github.com/google/uuid v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/klauspost/compress v1.17.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
