@@ -258,8 +258,8 @@ func (q queryMongodbRepository) FindPaymentByTicketNumber(ctx context.Context, t
 			Result:         &payment,
 			CollectionName: "payment-history",
 			Filter: bson.M{
-				"ticketNumber":   ticketNumber,
-				"isValidPayment": true,
+				"ticket.ticketNumber": ticketNumber,
+				"isValidPayment":      true,
 			},
 		}, ctx)
 		output <- resp

@@ -121,5 +121,5 @@ func setHttp(app *fiber.App, gs *graceful.GracefulShutdown) {
 	// set module
 	workerHandler.InitWorkerHttpHandler(app, workerUsecaseCommand, logger, redisClient)
 	workerHandler.InitCronHandler(workerUsecaseCommand, logger)
-	workerHandler.InitWorkerEventConflHandler(workerUsecaseCommand)
+	workerHandler.InitWorkerEventConflHandler(workerUsecaseCommand, logger)
 }

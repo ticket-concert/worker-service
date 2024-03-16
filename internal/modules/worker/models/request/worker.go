@@ -8,8 +8,8 @@ type CreateTicketRequest struct {
 }
 
 type CreateTicketReq struct {
-	TicketId string `json:"ticketId"`
-	EventId  string `json:"eventId"`
+	TicketId string `json:"ticketId" validate:"required"`
+	EventId  string `json:"eventId" validate:"required"`
 }
 
 type CreateOnlineTicketReq struct {

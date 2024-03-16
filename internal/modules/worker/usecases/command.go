@@ -216,6 +216,7 @@ func (c commandUsecase) UpdateAllExpiryBankTicket(origCtx context.Context) (*str
 			return nil, paymentData.Error
 		}
 		if paymentData.Data != nil {
+			c.logger.Info(ctx, "Skip ticketNumber: ", b)
 			continue
 		}
 
