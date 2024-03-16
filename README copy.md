@@ -2,7 +2,7 @@
 
 ## Description
 
-This service is responsible for managing users and their roles.
+This service is responsible become support service and running cron job.
 
 ## How to run
 
