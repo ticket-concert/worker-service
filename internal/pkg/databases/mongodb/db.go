@@ -456,16 +456,72 @@ func (m MongoDBLogger) InsertMany(payload InsertMany, ctx context.Context) <-cha
 		defer close(output)
 		start := time.Now()
 
-		collection := m.mongoClient.Database(m.dbName).Collection(payload.CollectionName)
-		insertDoc, err := collection.InsertMany(ctx, payload.Documents)
+		wc := writeconcern.Majority()
+		rc := readconcern.Snapshot()
+		txnOpts := options.Transaction().SetWriteConcern(wc).SetReadConcern(rc)
 
+		collection := m.mongoClient.Database(m.dbName).Collection(payload.CollectionName)
+		// pByte, err := bson.Marshal(payload.Documents)
+		// if err != nil {
+		// 	msg := fmt.Sprintf("Error Mongodb: %s", err.Error())
+		// 	m.logger.Error(ctx, msg, fmt.Sprintf("%+v", payload))
+		// 	output <- wrapper.Result{
+		// 		Error: errors.InternalServerError("Error mongodb"),
+		// 	}
+		// }
+
+		// var insert bson.M
+		// err = bson.Unmarshal(pByte, &insert)
+		// if err != nil {
+		// 	msg := fmt.Sprintf("Error Mongodb: %s", err.Error())
+		// 	m.logger.Error(ctx, msg, fmt.Sprintf("%+v", payload))
+		// 	output <- wrapper.Result{
+		// 		Error: errors.InternalServerError("Error mongodb"),
+		// 	}
+		// }
+
+		callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
+			// Important: You must pass sessCtx as the Context parameter to the operations for them to be executed in the
+			// transaction.
+			insertDoc, err := collection.InsertMany(sessCtx, payload.Documents)
+
+			if err != nil {
+				msg := fmt.Sprintf("Error Mongodb Connection : %s", err.Error())
+				m.logger.Error(ctx, msg, fmt.Sprintf("%+v", payload))
+				return nil, errors.InternalServerError("Error mongodb connection")
+			}
+			return insertDoc, nil
+		}
+
+		session, err := m.mongoClient.StartSession()
 		if err != nil {
-			msg := fmt.Sprintf("Error Mongodb Connection : %s", err.Error())
+			msg := fmt.Sprintf("Error Mongodb Session : %s", err.Error())
 			m.logger.Error(ctx, msg, fmt.Sprintf("%+v", payload))
 			output <- wrapper.Result{
-				Error: errors.InternalServerError("Error mongodb connection"),
+				Error: errors.InternalServerError("Error mongodb session"),
 			}
 		}
+		defer session.EndSession(context.Background())
+
+		insertDoc, err := session.WithTransaction(ctx, callback, txnOpts)
+		if err != nil {
+			msg := fmt.Sprintf("Error Mongodb Transaction : %s", err.Error())
+			m.logger.Error(ctx, msg, fmt.Sprintf("%+v", payload))
+			output <- wrapper.Result{
+				Error: errors.InternalServerError("Error mongodb transaction"),
+			}
+		}
+
+		// collection := m.mongoClient.Database(m.dbName).Collection(payload.CollectionName)
+		// insertDoc, err := collection.InsertMany(ctx, payload.Documents)
+
+		// if err != nil {
+		// 	msg := fmt.Sprintf("Error Mongodb Connection : %s", err.Error())
+		// 	m.logger.Error(ctx, msg, fmt.Sprintf("%+v", payload))
+		// 	output <- wrapper.Result{
+		// 		Error: errors.InternalServerError("Error mongodb connection"),
+		// 	}
+		// }
 
 		finish := time.Now()
 
