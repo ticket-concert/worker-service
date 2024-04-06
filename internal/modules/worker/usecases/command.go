@@ -85,6 +85,10 @@ func (c commandUsecase) CreateBankTicket(origCtx context.Context, payload reques
 		results = append(results, ticket)
 	}
 
+	if len(results) == 0 {
+		return nil, errors.BadRequest("create bank ticket already completed")
+	}
+
 	respTicket := <-c.workerRepositoryCommand.InsertManyTicketCollection(ctx, collection, results)
 	if respTicket.Error != nil {
 		return nil, respTicket.Error
