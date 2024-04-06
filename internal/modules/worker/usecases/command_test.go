@@ -94,6 +94,45 @@ func (suite *CommandUsecaseTestSuite) TestCreateBankTicket() {
 	assert.NoError(suite.T(), err)
 }
 
+func (suite *CommandUsecaseTestSuite) TestCreateBankTicketErrCompleted() {
+	payload := request.CreateTicketReq{
+		TicketId: "id",
+		EventId:  "id",
+	}
+
+	mockTicketDetail := helpers.Result{
+		Data: &entity.TicketDetail{
+			TicketId:    "id",
+			TotalQuota:  0,
+			TicketPrice: 40,
+			Country: entity.Country{
+				Code: "code",
+			},
+		},
+		Error: nil,
+	}
+
+	mockBankTicket := helpers.Result{
+		Data: &entity.BankTicket{
+			TicketNumber: "5",
+			SeatNumber:   5,
+		},
+		Error: nil,
+	}
+
+	mockInsertManyTicket := helpers.Result{
+		Data:  nil,
+		Error: nil,
+	}
+
+	suite.mockWorkerRepositoryQuery.On("FindOneTicketDetail", mock.Anything, mock.Anything).Return(mockChannel(mockTicketDetail))
+	suite.mockWorkerRepositoryQuery.On("FindOneLastTicket", mock.Anything, mock.Anything,
+		mock.Anything, mock.Anything, mock.Anything).Return(mockChannel(mockBankTicket))
+	suite.mockWorkerRepositoryCommand.On("InsertManyTicketCollection", mock.Anything, mock.Anything, mock.Anything).Return(mockChannel(mockInsertManyTicket))
+	_, err := suite.usecase.CreateBankTicket(suite.ctx, payload)
+	assert.Error(suite.T(), err)
+}
+
 func (suite *CommandUsecaseTestSuite) TestCreateBankTicketErrDetail() {
 	payload := request.CreateTicketReq{
 		TicketId: "id",
