@@ -23,7 +23,7 @@ Worker Service is service that used to create offline & online bank ticket, and 
 #General
 SERVICE_NAME=service_worker
 SERVICE_VERSION=1.0.0
-SERVICE_PORT=9001
+SERVICE_PORT=9004
 SERVICE_ENV=development
 USERNAME_BASIC_AUTH=username
 PASSWORD_BASIC_AUTH=password
